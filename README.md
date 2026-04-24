@@ -1,3 +1,4 @@
+![CI](https://github.com/Sanskar121543/DriftSentinel/actions/workflows/ci.yml/badge.svg)
 <div align="center">
 
 <br/>
