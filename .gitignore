@@ -20,3 +20,10 @@ benchmarks/results/
 /tmp/
 mlruns/
 .DS_Store
+mlflow.db
+mlartifacts/
+__pycache__/
+*.pyc
+*.pyo
+*.parquet
+*.log
