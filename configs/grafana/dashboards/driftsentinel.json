@@ -1,0 +1,89 @@
+{
+  "title": "DriftSentinel Overview",
+  "uid": "driftsentinel-main",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Models Monitored",
+      "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+      "targets": [{
+        "expr": "driftsentinel_models_monitored_total",
+        "legendFormat": "models"
+      }],
+      "options": {"colorMode": "background", "graphMode": "none"}
+    },
+    {
+      "type": "stat",
+      "title": "Total Alerts (1h)",
+      "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+      "targets": [{
+        "expr": "increase(driftsentinel_alerts_total[1h])",
+        "legendFormat": "alerts"
+      }],
+      "options": {
+        "colorMode": "background",
+        "thresholds": {
+          "steps": [
+            {"color": "green", "value": 0},
+            {"color": "yellow", "value": 5},
+            {"color": "red", "value": 20}
+          ]
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Critical Alerts (1h)",
+      "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+      "targets": [{
+        "expr": "increase(driftsentinel_alerts_total{severity='critical'}[1h])",
+        "legendFormat": "critical"
+      }],
+      "options": {"colorMode": "background"}
+    },
+    {
+      "type": "timeseries",
+      "title": "Drift Alerts by Severity",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "increase(driftsentinel_alerts_total[5m])",
+          "legendFormat": "{{model_id}} - {{severity}}"
+        }
+      ],
+      "options": {"tooltip": {"mode": "multi"}}
+    },
+    {
+      "type": "gauge",
+      "title": "Features Drifted per Model",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "driftsentinel_features_drifted",
+        "legendFormat": "{{model_id}}"
+      }],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Detection Latency (p99)",
+      "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "histogram_quantile(0.99, rate(driftsentinel_detection_duration_seconds_bucket[5m]))",
+        "legendFormat": "{{model_id}} p99"
+      }]
+    },
+    {
+      "type": "timeseries",
+      "title": "API Request Rate",
+      "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+      "targets": [{
+        "expr": "rate(driftsentinel_api_requests_total[1m])",
+        "legendFormat": "{{method}} {{path}} {{status_code}}"
+      }]
+    }
+  ],
+  "time": {"from": "now-3h", "to": "now"}
+}

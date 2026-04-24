@@ -1,0 +1,55 @@
+drift:
+  window_minutes: 5
+  watermark_minutes: 10
+  min_alert_tests: 2
+  ks_pvalue_threshold: 0.05
+  chi2_pvalue_threshold: 0.05
+  psi_threshold: 0.2
+  js_threshold: 0.1
+  shap_delta_threshold: 0.15
+
+canary:
+  stages: [0.05, 0.20, 0.50, 1.00]
+  sprt_alpha: 0.05
+  sprt_beta: 0.10
+  sprt_mde: 0.02
+  max_stage_hours: 24
+  min_stage_samples: 500
+
+retraining:
+  cost_ceiling_usd: 50.0
+  selector_model_path: models/strategy_selector.pkl
+  weighted_lambda: 0.05
+
+sla_tiers:
+  critical:
+    max_p99_latency_ms: 100
+    max_error_rate: 0.001
+    min_uptime: 0.9999
+  standard:
+    max_p99_latency_ms: 500
+    max_error_rate: 0.01
+    min_uptime: 0.999
+  experimental:
+    max_p99_latency_ms: 2000
+    max_error_rate: 0.05
+    min_uptime: 0.99
+
+kafka:
+  topics:
+    inference_events:
+      partitions: 24
+      retention_ms: 604800000
+    feature_stats:
+      partitions: 12
+      retention_ms: 2592000000
+      cleanup_policy: compact
+    drift_alerts:
+      partitions: 6
+      retention_ms: 7776000000
+    retrain_triggers:
+      partitions: 6
+    canary_decisions:
+      partitions: 6
+    ge_quarantine:
+      partitions: 6

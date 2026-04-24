@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'driftsentinel'
+
+scrape_configs:
+  - job_name: 'driftsentinel-api'
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9101']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

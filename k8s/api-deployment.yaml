@@ -1,0 +1,169 @@
+---
+# DriftSentinel API — Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: driftsentinel-api
+  namespace: driftsentinel
+  labels:
+    app: driftsentinel-api
+    version: "1.0.0"
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: driftsentinel-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: driftsentinel-api
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: driftsentinel-sa
+      containers:
+        - name: api
+          image: gcr.io/your-project/driftsentinel-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - secretRef:
+                name: driftsentinel-secrets
+            - configMapRef:
+                name: driftsentinel-config
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: driftsentinel-api
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: driftsentinel-api
+  namespace: driftsentinel
+  labels:
+    app: driftsentinel-api
+spec:
+  selector:
+    app: driftsentinel-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: driftsentinel-api-hpa
+  namespace: driftsentinel
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: driftsentinel-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: driftsentinel-config
+  namespace: driftsentinel
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  MLFLOW_TRACKING_URI: "http://mlflow-service:5000"
+  LOG_FORMAT: "json"
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "production"
+  DRIFT_WINDOW_MINUTES: "5"
+  DRIFT_MIN_ALERT_TESTS: "2"
+  K8S_NAMESPACE: "driftsentinel"
+  K8S_IN_CLUSTER: "true"
+
+---
+# PodDisruptionBudget: ensure at least 1 API pod is always running
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: driftsentinel-api-pdb
+  namespace: driftsentinel
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: driftsentinel-api
+
+---
+# ServiceMonitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: driftsentinel-api
+  namespace: driftsentinel
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: driftsentinel-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
