@@ -69,6 +69,11 @@ The gap between a Jupyter notebook and a production ML system is enormous. Most 
 | No rollback logic | SPRT-gated promotion with automatic rollback |
 
 ---
+## Technical Writeup
+
+Read the full engineering breakdown here:
+
+[Building a Self-Healing ML Observability System](https://medium.com/@sanskar.shimpi/building-a-self-healing-ml-observability-system-ed8cf8a73728)
 
 ## Architecture
 
