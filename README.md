@@ -1,6 +1,6 @@
 ![CI](https://github.com/Sanskar121543/DriftSentinel/actions/workflows/ci.yml/badge.svg)
-<div align="center">
 
+<div align="center">
 <br/>
 
 ```
@@ -13,19 +13,19 @@
 ```
 
 ### Autonomous ML Observability & Self-Healing Platform
-
 *Real-time drift detection · Automated diagnosis · Cost-aware retraining · Statistically validated canary promotion*
 
 <br/>
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Kafka](https://img.shields.io/badge/Apache_Kafka-Streaming-231F20?style=flat-square&logo=apache-kafka&logoColor=white)](https://kafka.apache.org)
 [![Spark](https://img.shields.io/badge/Apache_Spark-Micro--Batch-E25A1C?style=flat-square&logo=apache-spark&logoColor=white)](https://spark.apache.org)
 [![Airflow](https://img.shields.io/badge/Airflow-Orchestration-017CEE?style=flat-square&logo=apache-airflow&logoColor=white)](https://airflow.apache.org)
 [![MLflow](https://img.shields.io/badge/MLflow-Experiment_Tracking-0194E2?style=flat-square&logo=mlflow&logoColor=white)](https://mlflow.org)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
-[![Tests](https://img.shields.io/badge/Tests-37_Passed-22C55E?style=flat-square&logo=pytest&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-121_Passed-22C55E?style=flat-square&logo=pytest&logoColor=white)]()
+[![Property-Based](https://img.shields.io/badge/Property--Based-Hypothesis-6E4C9F?style=flat-square)]()
 [![License](https://img.shields.io/badge/License-MIT-6366F1?style=flat-square)](LICENSE)
 
 <br/>
@@ -51,7 +51,8 @@ DETECT → DIAGNOSE → DECIDE → RETRAIN → VALIDATE → PROMOTE / ROLLBACK
 |--------|--------|--------|--------|
 | Mean Time to Detect Drift | **0.45 hours** | ≤ 4.0h | ✅ **9× faster than target** |
 | Strategy Selector Accuracy | **100%** | ≥ 94% | ✅ **Perfect** |
-| Unit Test Suite | **37 / 37 Passed** | All Pass | ✅ **Clean** |
+| Test Suite | **121 / 121 Passed** | All Pass | ✅ **Clean** |
+| Core-Module Coverage | **90–100%** | ≥ 50% overall | ✅ **High** |
 
 ---
 
@@ -67,14 +68,17 @@ The gap between a Jupyter notebook and a production ML system is enormous. Most 
 | Fixed A/B test windows | Sequential canary testing with early stopping |
 | Ad-hoc experiments | Full MLflow lineage and model registry |
 | No rollback logic | SPRT-gated promotion with automatic rollback |
+| Example-only unit tests | Property-based testing + CI on every push |
 
 ---
+
 ## Technical Writeup
 
 Read the full engineering breakdown here:
-
 [Building a Self-Healing ML Observability System](https://medium.com/@sanskar.shimpi/building-a-self-healing-ml-observability-system-ed8cf8a73728)
+
 ---
+
 ## Architecture
 
 ```
@@ -177,6 +181,31 @@ DriftSentinel uses **Sequential Probability Ratio Testing** rather than fixed-ho
 
 ---
 
+## Testing & Quality
+
+DriftSentinel treats the test suite as a first-class deliverable — the same way production ML teams do.
+
+| Layer | What it verifies |
+|-------|------------------|
+| **Unit tests** | Every detector, the engine, SPRT, schema, and strategy selector in isolation |
+| **Property-based tests (Hypothesis)** | Mathematical invariants across thousands of generated inputs — KS/JS bounded in [0, 1], PSI non-negative, SPRT decisions never cross their own boundaries |
+| **Integration tests** | Reference-store TTL/segment isolation, thread-pool failure isolation, end-to-end `DriftAlert → RetrainTrigger` routing |
+| **Async lifecycle tests** | Full canary promote/hold/rollback flow with mocked MLflow + Kubernetes |
+
+```bash
+# Run the full suite
+pytest tests/
+
+# With coverage
+pytest tests/ --cov=src --cov-report=term-missing
+```
+
+- **121 tests**, all passing
+- **90–100% coverage** on core statistical and decision modules (SPRT, schema, config 100%; engine 98%; selector 99%; canary 90%)
+- **GitHub Actions CI** on every push: Python 3.11 / 3.12 matrix, coverage gate, and `ruff` linting
+
+---
+
 ## Experiment Tracking
 
 Every retraining cycle is fully logged in **MLflow**: parameters, metrics, artifacts, and the full challenger evaluation history.
@@ -197,8 +226,8 @@ All model versions are registered with lineage back to the drift event that trig
 | **Orchestration** | Apache Airflow |
 | **Experiment Tracking** | MLflow |
 | **Observability** | Prometheus · Grafana |
-| **Testing** | Pytest (37 tests) |
-| **Infra** | Docker · Kubernetes-ready |
+| **Testing** | Pytest · Hypothesis (121 tests) · GitHub Actions CI |
+| **Infra** | Docker · Kubernetes-ready · Terraform |
 
 ---
 
@@ -229,6 +258,13 @@ make setup-topics
 | MLflow | http://localhost:5000 |
 | Grafana | http://localhost:3000 |
 
+### Run Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ --cov=src --cov-report=term-missing
+```
+
 ### Run Benchmarks
 
 ```bash
@@ -245,21 +281,33 @@ python -m benchmarks.run_all
 
 ```
 DriftSentinel/
-├── airflow/          # DAG definitions for retraining pipelines
-├── benchmarks/       # Reproducible benchmark suite
-├── configs/          # Environment and pipeline configuration
-├── docs/             # Architecture diagrams and images
-├── k8s/              # Kubernetes manifests
-├── models/           # Model artifacts and registry
-├── scripts/          # Utility and setup scripts
+├── .github/workflows/  # CI: pytest matrix, coverage, ruff
+├── airflow/            # DAG definitions for retraining pipelines
+├── benchmarks/         # Reproducible benchmark suite
+├── configs/            # Environment and pipeline configuration
+├── docs/               # Architecture diagrams and images
+├── k8s/                # Kubernetes manifests
+├── models/             # Model artifacts and registry
+├── scripts/            # Utility and setup scripts
 ├── src/
-│   ├── detection/    # KS, Chi², PSI, JS, SHAP detectors
-│   ├── diagnosis/    # LLM diagnosis engine + memory
-│   ├── selector/     # Cost-aware strategy selector
-│   ├── retraining/   # Airflow pipeline + MLflow integration
-│   └── canary/       # SPRT-based canary deployment
-├── tests/            # 37-test pytest suite
-├── demo.py           # Lightweight local demo
+│   ├── api/            # FastAPI service
+│   ├── ingestion/      # Kafka producer, schemas, GE validator, aggregation
+│   ├── drift/          # Engine + KS, Chi², PSI, JS, SHAP detectors
+│   ├── diagnosis/      # LLM diagnosis engine + RAG memory
+│   ├── retraining/     # Cost-aware strategy selector
+│   ├── canary/         # SPRT-based canary deployment + promoter
+│   └── utils/          # Config, logging, Jira, Spark helpers
+├── tests/              # 121-test suite (unit · property-based · integration)
+│   ├── conftest.py
+│   ├── test_core.py
+│   ├── test_properties.py
+│   ├── test_drift_detectors.py
+│   ├── test_engine_advanced.py
+│   ├── test_strategy_selector_advanced.py
+│   ├── test_schema_validation.py
+│   └── test_promoter.py
+├── demo.py             # Lightweight local demo
+├── main.tf             # Terraform infrastructure
 └── docker-compose.yml
 ```
 
@@ -284,6 +332,6 @@ DriftSentinel/
 
 <br/>
 
-[![Star this repo](https://img.shields.io/github/stars/yourusername/DriftSentinel?style=social)](https://github.com/yourusername/DriftSentinel)
+[![Star this repo](https://img.shields.io/github/stars/Sanskar121543/DriftSentinel?style=social)](https://github.com/Sanskar121543/DriftSentinel)
 
 </div>
