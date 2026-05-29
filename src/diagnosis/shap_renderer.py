@@ -8,7 +8,6 @@ showing reference vs. current SHAP distributions.
 
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
 import matplotlib
@@ -62,8 +61,8 @@ def render_shap_waterfall(
     y = np.arange(len(top_features))
     bar_h = 0.35
 
-    bars_ref = ax.barh(y + bar_h / 2, top_ref, bar_h, label="Reference", color="#4C72B0", alpha=0.85)
-    bars_cur = ax.barh(y - bar_h / 2, top_cur, bar_h, label="Current", color="#DD8452", alpha=0.85)
+    ax.barh(y + bar_h / 2, top_ref, bar_h, label="Reference", color="#4C72B0", alpha=0.85)
+    ax.barh(y - bar_h / 2, top_cur, bar_h, label="Current", color="#DD8452", alpha=0.85)
 
     ax.set_yticks(y)
     ax.set_yticklabels(top_features, fontsize=9)

@@ -36,7 +36,7 @@ class ChiSquaredTest:
         expected = np.maximum(expected, 1e-6)
 
         statistic, p_value = stats.chisquare(f_obs=cur_counts, f_exp=expected)
-        drifted = p_value < self.p_value_threshold
+        drifted = bool(p_value < self.p_value_threshold)
 
         return TestResult(
             test_name=_TEST_NAME,

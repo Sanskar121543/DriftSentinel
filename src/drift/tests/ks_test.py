@@ -46,7 +46,7 @@ class KolmogorovSmirnovTest:
             return None
 
         statistic, p_value = stats.ks_2samp(ref_samples, cur_samples)
-        drifted = p_value < self.p_value_threshold
+        drifted = bool(p_value < self.p_value_threshold)
 
         return TestResult(
             test_name=_TEST_NAME,

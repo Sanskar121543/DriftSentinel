@@ -6,7 +6,6 @@ Used by the canary promoter to file rollback tickets automatically.
 
 from __future__ import annotations
 
-import asyncio
 
 import httpx
 

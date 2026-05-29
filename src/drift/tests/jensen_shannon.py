@@ -35,7 +35,7 @@ class JensenShannonDivergence:
 
         # scipy jensenshannon returns the JS distance (sqrt of divergence)
         js_distance = float(jensenshannon(ref_dist, cur_dist))
-        drifted = js_distance > self.threshold
+        drifted = bool(js_distance > self.threshold)
 
         return TestResult(
             test_name=_TEST_NAME,

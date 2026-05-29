@@ -17,12 +17,11 @@ Design decisions:
 from __future__ import annotations
 
 import json
-from datetime import datetime
 
 from pyspark.sql import SparkSession, DataFrame, functions as F
 from pyspark.sql.types import (
     StructType, StructField, StringType, DoubleType,
-    ArrayType, MapType, LongType, TimestampType, BooleanType,
+    ArrayType, MapType, LongType, TimestampType,
 )
 
 from src.utils.config import settings

@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from enum import Enum
 from typing import NamedTuple
 
 import numpy as np
@@ -127,7 +126,7 @@ class SPRT:
         p1_clipped = np.clip(p1, eps, 1 - eps)
 
         # H1: challenger improves by MDE
-        p1_under_h1 = np.clip(p0_clipped + self.config.mde, eps, 1 - eps)
+        _p1_under_h1 = np.clip(p0_clipped + self.config.mde, eps, 1 - eps)
 
         # Bernoulli log-likelihood ratio
         if abs(p1_clipped - p0_clipped) < eps:

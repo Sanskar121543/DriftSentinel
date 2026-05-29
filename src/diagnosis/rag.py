@@ -18,11 +18,9 @@ As the organization accumulates incident history, the agent gets smarter.
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any
 
 from openai import AsyncOpenAI

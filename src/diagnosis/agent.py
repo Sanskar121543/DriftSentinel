@@ -22,16 +22,13 @@ import base64
 import json
 import uuid
 from pathlib import Path
-from typing import Any
 
 import mlflow
-import openai
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_openai import ChatOpenAI
 
 from src.diagnosis.rag import IncidentRAG
-from src.diagnosis.shap_renderer import render_shap_waterfall
 from src.ingestion.schema import (
     DriftAlert,
     DiagnosisReport,

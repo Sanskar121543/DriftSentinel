@@ -33,7 +33,7 @@ class PopulationStabilityIndex:
             return None
 
         psi = _psi(ref_pct, cur_pct)
-        drifted = psi > self.threshold
+        drifted = bool(psi > self.threshold)
 
         return TestResult(
             test_name=_TEST_NAME,

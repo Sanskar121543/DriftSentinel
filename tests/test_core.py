@@ -12,14 +12,13 @@ Covers:
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timedelta
 
 import numpy as np
 import pytest
 
 from src.canary.sprt import SPRT, SPRTConfig
-from src.drift.engine import DriftDetectionEngine, ReferenceStore
+from src.drift.engine import DriftDetectionEngine
 from src.drift.tests.chi_square import ChiSquaredTest
 from src.drift.tests.jensen_shannon import JensenShannonDivergence
 from src.drift.tests.ks_test import KolmogorovSmirnovTest
@@ -402,7 +401,7 @@ class TestSPRT:
     def test_reset_clears_state(self):
         sprt = SPRT()
         sprt.update([0.2] * 100, [0.3] * 100)
-        initial_llr = sprt.current_llr
+        sprt.current_llr
         sprt.reset()
         assert sprt.current_llr == 0.0
         assert sprt.n_samples == 0

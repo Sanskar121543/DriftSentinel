@@ -57,7 +57,7 @@ class SHAPDeltaTracker:
         else:
             delta = abs(cur_shap - ref_shap)
 
-        drifted = delta > self.threshold
+        drifted = bool(delta > self.threshold)
 
         return TestResult(
             test_name=_TEST_NAME,

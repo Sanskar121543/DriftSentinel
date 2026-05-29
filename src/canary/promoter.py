@@ -22,8 +22,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Callable, Any
+from typing import Callable
 
 import mlflow
 from kubernetes import client as k8s_client, config as k8s_config
@@ -187,7 +186,7 @@ class CanaryPromoter:
             hard_fail_reason = self._check_hard_boundaries(snapshot)
 
             if hard_fail_reason:
-                stage_metrics = self._record_stage_metrics(
+                self._record_stage_metrics(
                     traffic_pct, snapshot, sprt_result, CanaryDecision.ROLLBACK
                 )
                 logger.warning(
@@ -204,7 +203,7 @@ class CanaryPromoter:
                     reason=f"Hard boundary violated: {hard_fail_reason}",
                 )
 
-            stage_metrics = self._record_stage_metrics(
+            self._record_stage_metrics(
                 traffic_pct, snapshot, sprt_result, sprt_result.decision
             )
 
